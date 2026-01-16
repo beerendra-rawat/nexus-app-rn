@@ -1,25 +1,35 @@
-import { View, ActivityIndicator } from "react-native";
+import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
-import { useRoute } from "@react-navigation/native";
 
-export default function AuthWebView() {
-  const route = useRoute();
-  const { url, token } = route.params;
+export default function AuthWebView({ route }) {
+    const { authToken } = route.params;
 
-  console.log("🌐 Opening WebView:", url);
+    const DASHBOARD_URL = `https://your-website.com/dashboard?token=${authToken}`;
 
-  return (
-    <View style={{ flex: 1 }}>
-      <WebView
-        source={{
-          uri: url,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }}
-        startInLoadingState
-        renderLoading={() => <ActivityIndicator size="large" />}
-      />
-    </View>
-  );
+    return (
+        <View style={styles.container}>
+            <WebView
+                source={{ uri: DASHBOARD_URL }}
+                startInLoadingState
+                renderLoading={() => (
+                    <ActivityIndicator
+                        size="large"
+                        color="#0A58CA"
+                        style={styles.loader}
+                    />
+                )}
+            />
+        </View>
+    );
 }
+
+const styles = StyleSheet.create({
+    container: { flex: 1 },
+    loader: {
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        marginLeft: -20,
+        marginTop: -20,
+    },
+});
