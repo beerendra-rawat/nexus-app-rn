@@ -20,29 +20,48 @@ export default function GoogleAuthScreen() {
 
   const navigation = useNavigation();
 
-  useEffect(() => {
-    GoogleSignin.configure({
-      androidClientId:
-        "131156201760-7f0b6p3u65ml465pe09klcoo1j2hk2d3.apps.googleusercontent.com",
-      iosClientId:
-        "131156201760-rpkenbo5umd4c455685oahtrjrd9isgb.apps.googleusercontent.com",
-      scopes: ["openid", "profile", "email"],
-    });
-  })
+  // useEffect(() => {
+  //   GoogleSignin.configure({
+  //     // webClientId: "131156201760-7f0b6p3u65ml465pe09klcoo1j2hk2d3.apps.googleusercontent.com",
+  //     androidClientId:
+  //       "131156201760-p4vpenkhd0dpk5e6nb379hqaac6sctlc.apps.googleusercontent.com",
+  //     iosClientId:
+  //       "131156201760-rpkenbo5umd4c455685oahtrjrd9isgb.apps.googleusercontent.com",
+  //     scopes: ["openid", "profile", "email"],
+  //   });
+  // },[])
+
+  GoogleSignin.configure({
+    webClientId: "131156201760-7f0b6p3u65ml465pe09klcoo1j2hk2d3.apps.googleusercontent.com",
+    scopes: ["profile", "email"],
+    offlineAccess: true,
+  });
+
 
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
       console.log("🔵 Google Sign-In started");
 
-      await GoogleSignin.hasPlayServices();
+      const data = await GoogleSignin.hasPlayServices();
+      console.log(data)
+
       const response = await GoogleSignin.signIn()
       console.log("✅ Google response:", response);
+
+      if (!isSuccessResponse(response)) {
+        console.log("❌ Google Sign-In not successful:", response)
+      }
 
       const idToken = response.idToken
       if (!idToken) {
         throw new Error("No idToken received")
       }
+      console.log("🟢 idToken received");
+
+      const userInfo = response.data
+      console.log("✅ Google user info:", userInfo);
+
       const backendResponse = await fetch(
         "https://api-nexus-uat.techchefz.com/node/api/nexus/authentication/google?isNativeApp=true",
         {
@@ -77,6 +96,7 @@ export default function GoogleAuthScreen() {
       setLoading(false);
     }
   };
+
 
   return (
     <LinearGradient

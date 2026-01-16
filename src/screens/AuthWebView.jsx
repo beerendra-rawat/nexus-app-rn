@@ -4,7 +4,7 @@ import { WebView } from "react-native-webview";
 export default function AuthWebView({ route }) {
     const { authToken } = route.params;
 
-    const DASHBOARD_URL = `https://your-website.com/dashboard?token=${authToken}`;
+    const DASHBOARD_URL = "https://nexus-uat.techchefz.com/dashboard";
 
     return (
         <View style={styles.container}>
