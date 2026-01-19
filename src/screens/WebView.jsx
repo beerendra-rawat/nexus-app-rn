@@ -3,11 +3,9 @@ import { WebView } from "react-native-webview";
 
 export default function AuthWebView() {
     const DASHBOARD_URL = "https://nexus-uat.techchefz.com/dashboard";
-
     return (
         <View style={styles.container}>
-            <WebView
-                source={{ uri: DASHBOARD_URL }}
+            <WebView source={{ uri: DASHBOARD_URL }}
                 startInLoadingState
                 renderLoading={() => (
                     <ActivityIndicator

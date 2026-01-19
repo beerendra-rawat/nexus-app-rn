@@ -1,5 +1,4 @@
-import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ActivityIndicator } from "react-native";
-import { Platform } from "react-native";
+import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ActivityIndicator, Platform } from "react-native";
 import * as Application from "expo-application";
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -12,7 +11,7 @@ import {
 } from '@react-native-google-signin/google-signin';
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { saveAuthToken, setAuthData } from "../utils/authBridge";
+import { saveAuthToken, saveAuthObject, getAuthObject } from "../utils/HelperFun";
 
 const { width } = Dimensions.get('window')
 
@@ -34,31 +33,27 @@ export default function GoogleAuthScreen() {
       setLoading(true);
       console.log("Google Sign-In started");
 
-      const hasPlayServices = await GoogleSignin.hasPlayServices();
-      console.log("Play Services:", hasPlayServices);///boolen check
+      await GoogleSignin.hasPlayServices();
 
-      const response = await GoogleSignin.signIn()
+      const response = await GoogleSignin.signIn();
       console.log("Google response:", response);
 
       if (!isSuccessResponse(response)) {
         console.log("Google Sign-In not successful:", response)
       }
 
-      let idToken = response.data?.idToken
-      if (!idToken) {
-        throw new Error("No idToken received")
-      }
-      console.log("idToken received", idToken);
-
-      await saveAuthToken(idToken)///save token in asyncStorage
+      const idToken = response?.data?.idToken;
+      if (!idToken) throw new Error("No idToken received");
+      console.log("idToken received:", idToken);
+      await saveAuthToken(idToken)        ///save token in asyncStorage
 
       const deviceId =
-        Platform.OS === 'android'
+        Platform.OS === "android"
           ? Application.getAndroidId()
           : Application.getIosIdForVendor();
-      console.log("deviceID is -> ", deviceId)
+      console.log("deviceId:", deviceId);
 
-      const backendResponse = await fetch(
+      const backendRequest = await fetch(
         "https://api-nexus-uat.techchefz.com/node/api/nexus/authentication/google?isNativeApp=true",
         {
           method: "POST",
@@ -69,30 +64,29 @@ export default function GoogleAuthScreen() {
             platform: Platform.OS,
           }),
         }
-      )
+      );
+      const backendResponse = await backendRequest.json();
+      console.log("Backend response:", backendResponse);
 
-      const authData = await backendResponse.json()
-      // await new Promise(resolve => setTimeout(resolve, 2000));
-      console.log("Backend response:", authData);
-
-      if (!authData.success) {
-        throw new Error(authData.message || "Authentication failed");
-      }
-      if (!authData.authToken) {
-        throw new Error("Auth token missing in response");
+      if (!backendResponse.success) {
+        throw new Error(backendResponse.message || "Authentication failed");
       }
 
-      // if (!authData || !authData.authToken) {
-      //   throw new Error("No authToken received from backend");
-      // }
+      // Extract required values
+      const authObject = {
+        authToken: backendResponse.data.jwtAccessToken,
+        refreshToken: backendResponse.data.refreshToken,
+        deviceId: deviceId,
+        guid: backendResponse.data.user.guid,
+      };
+      console.log("Auth Object to Save:", authObject);
 
-      // Save auth data
-      await setAuthData(authData);
-      // Redirect to nexus dashboard
-      navigation.replace("AuthWebView");
-    }
+      await saveAuthObject(authObject);     //Save object in AsyncStorage
+      await getAuthObject();        // Fetch object again & log
 
-    catch (error) {
+      navigation.replace("AuthWebView");    // Navigate
+
+    } catch (error) {
       console.error("Sign-in error:", error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('Sign in cancelled');

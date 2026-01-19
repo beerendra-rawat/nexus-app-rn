@@ -1,11 +1,9 @@
 import { StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
-
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-
 import GoogleAuthScreen from "./src/screens/GoogleAuthScreen";
-import AuthWebView from "./src/screens/AuthWebView";
+import AuthWebView from "./src/screens/WebView";
 
 const Stack = createNativeStackNavigator();
 
@@ -14,30 +12,14 @@ export default function App() {
     // DM Sans
     "DMSans-Regular": require("./src/assets/fonts/DMSans-Regular.ttf"),
     "DMSans-Bold": require("./src/assets/fonts/DMSans-Bold.ttf"),
-    "DMSans-SemiBold": require("./src/assets/fonts/DMSans-SemiBold.ttf"),
-
-    // Inter
-    "Inter-Regular": require("./src/assets/fonts/Inter_28pt-Regular.ttf"),
-    "Inter-Medium": require("./src/assets/fonts/Inter_28pt-Medium.ttf"),
-    "Inter-SemiBold": require("./src/assets/fonts/Inter_28pt-SemiBold.ttf"),
-    "Inter-Bold": require("./src/assets/fonts/Inter_28pt-Bold.ttf"),
-
-    // Lora
-    "Lora-Regular": require("./src/assets/fonts/Lora-Regular.ttf"),
-    "Lora-Medium": require("./src/assets/fonts/Lora-Medium.ttf"),
-    "Lora-SemiBold": require("./src/assets/fonts/Lora-SemiBold.ttf"),
-    "Lora-Bold": require("./src/assets/fonts/Lora-Bold.ttf"),
+    "DMSans-SemiBold": require("./src/assets/fonts/DMSans-SemiBold.ttf")
   });
-
   if (!fontsLoaded) return null;
 
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
-        {/* Google Login Screen */}
         <Stack.Screen name="GoogleAuth" component={GoogleAuthScreen} />
-
-        {/* Website Dashboard */}
         <Stack.Screen name="AuthWebView" component={AuthWebView} />
       </Stack.Navigator>
     </NavigationContainer>
