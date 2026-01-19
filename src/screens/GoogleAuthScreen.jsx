@@ -10,7 +10,7 @@ import {
   isSuccessResponse,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { saveAuthToken, setAuthData } from "../utils/authBridge";
 
@@ -21,11 +21,13 @@ export default function GoogleAuthScreen() {
   const [loading, setLoading] = useState(false)
   const navigation = useNavigation();
 
-  GoogleSignin.configure({
-    webClientId: "131156201760-7f0b6p3u65ml465pe09klcoo1j2hk2d3.apps.googleusercontent.com",
-    scopes: ["profile", "email"],
-    offlineAccess: true,
-  });
+  useEffect(() => {
+    GoogleSignin.configure({
+      webClientId: "131156201760-7f0b6p3u65ml465pe09klcoo1j2hk2d3.apps.googleusercontent.com",
+      scopes: ["profile", "email"],
+      offlineAccess: true,
+    });
+  }, [])
 
   const handleGoogleSignIn = async () => {
     try {
@@ -51,32 +53,38 @@ export default function GoogleAuthScreen() {
       await saveAuthToken(idToken)///save token in asyncStorage
 
       const deviceId =
-        Platform.OS === 'android' ? Application.getAndroidId() : Application.getIosIdForVendor();
+        Platform.OS === 'android'
+          ? Application.getAndroidId()
+          : Application.getIosIdForVendor();
       console.log("deviceID is -> ", deviceId)
-
-      const requestBody = {
-        'auth_code': idToken,
-        'x-device-id': deviceId,
-        platform: Platform.OS === "ios" ? "ios" : "android",
-      };
 
       const backendResponse = await fetch(
         "https://api-nexus-uat.techchefz.com/node/api/nexus/authentication/google?isNativeApp=true",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ requestBody }),
+          body: JSON.stringify({
+            auth_code: idToken,
+            "x-device-id": deviceId,
+            platform: Platform.OS,
+          }),
         }
       )
 
-      console.log("requestBody:", requestBody);
-
       const authData = await backendResponse.json()
+      // await new Promise(resolve => setTimeout(resolve, 2000));
       console.log("Backend response:", authData);
 
-      if (!authData || !authData.authToken) {
-        throw new Error("No authToken received from backend");
+      if (!authData.success) {
+        throw new Error(authData.message || "Authentication failed");
       }
+      if (!authData.authToken) {
+        throw new Error("Auth token missing in response");
+      }
+
+      // if (!authData || !authData.authToken) {
+      //   throw new Error("No authToken received from backend");
+      // }
 
       // Save auth data
       await setAuthData(authData);
@@ -219,3 +227,4 @@ const styles = StyleSheet.create({
   },
 
 })
+
