@@ -1,4 +1,6 @@
 import { View, Text, StyleSheet, Image, Dimensions, TouchableOpacity, ActivityIndicator } from "react-native";
+import { Platform } from "react-native";
+import * as Application from "expo-application";
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { StatusBar } from "expo-status-bar";
@@ -8,28 +10,16 @@ import {
   isSuccessResponse,
   statusCodes,
 } from '@react-native-google-signin/google-signin';
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { setAuthData } from "../utils/authBridge";
+import { saveAuthToken, setAuthData } from "../utils/authBridge";
 
 const { width } = Dimensions.get('window')
 
 export default function GoogleAuthScreen() {
 
   const [loading, setLoading] = useState(false)
-
   const navigation = useNavigation();
-
-  // useEffect(() => {
-  //   GoogleSignin.configure({
-  //     // webClientId: "131156201760-7f0b6p3u65ml465pe09klcoo1j2hk2d3.apps.googleusercontent.com",
-  //     androidClientId:
-  //       "131156201760-p4vpenkhd0dpk5e6nb379hqaac6sctlc.apps.googleusercontent.com",
-  //     iosClientId:
-  //       "131156201760-rpkenbo5umd4c455685oahtrjrd9isgb.apps.googleusercontent.com",
-  //     scopes: ["openid", "profile", "email"],
-  //   });
-  // },[])
 
   GoogleSignin.configure({
     webClientId: "131156201760-7f0b6p3u65ml465pe09klcoo1j2hk2d3.apps.googleusercontent.com",
@@ -37,52 +27,65 @@ export default function GoogleAuthScreen() {
     offlineAccess: true,
   });
 
-
   const handleGoogleSignIn = async () => {
     try {
       setLoading(true);
-      console.log("🔵 Google Sign-In started");
+      console.log("Google Sign-In started");
 
-      const data = await GoogleSignin.hasPlayServices();
-      console.log(data)
+      const hasPlayServices = await GoogleSignin.hasPlayServices();
+      console.log("Play Services:", hasPlayServices);///boolen check
 
       const response = await GoogleSignin.signIn()
-      console.log("✅ Google response:", response);
+      console.log("Google response:", response);
 
       if (!isSuccessResponse(response)) {
-        console.log("❌ Google Sign-In not successful:", response)
+        console.log("Google Sign-In not successful:", response)
       }
 
-      const idToken = response.idToken
+      let idToken = response.data?.idToken
       if (!idToken) {
         throw new Error("No idToken received")
       }
-      console.log("🟢 idToken received");
+      console.log("idToken received", idToken);
 
-      const userInfo = response.data
-      console.log("✅ Google user info:", userInfo);
+      await saveAuthToken(idToken)///save token in asyncStorage
+
+      const deviceId =
+        Platform.OS === 'android' ? Application.getAndroidId() : Application.getIosIdForVendor();
+      console.log("deviceID is -> ", deviceId)
+
+      const requestBody = {
+        'auth_code': idToken,
+        'x-device-id': deviceId,
+        platform: Platform.OS === "ios" ? "ios" : "android",
+      };
 
       const backendResponse = await fetch(
         "https://api-nexus-uat.techchefz.com/node/api/nexus/authentication/google?isNativeApp=true",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: idToken }),
+          body: JSON.stringify({ requestBody }),
         }
       )
 
+      console.log("requestBody:", requestBody);
+
       const authData = await backendResponse.json()
-      console.log("🟢 Backend response:", authData);
+      console.log("Backend response:", authData);
 
-      // 💾 Save using bridge
-      await setAuthData(authData)
+      if (!authData || !authData.authToken) {
+        throw new Error("No authToken received from backend");
+      }
 
-      // 🚀 Redirect
-      navigation.replace("AuthWebView")
+      // Save auth data
+      await setAuthData(authData);
+      // Redirect to nexus dashboard
+      navigation.replace("AuthWebView");
     }
 
     catch (error) {
-      console.error("❌ Sign-in error:", error);
+      console.error("Sign-in error:", error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('Sign in cancelled');
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -96,7 +99,6 @@ export default function GoogleAuthScreen() {
       setLoading(false);
     }
   };
-
 
   return (
     <LinearGradient

@@ -1,9 +1,7 @@
 import { View, ActivityIndicator, StyleSheet } from "react-native";
 import { WebView } from "react-native-webview";
 
-export default function AuthWebView({ route }) {
-    const { authToken } = route.params;
-
+export default function AuthWebView() {
     const DASHBOARD_URL = "https://nexus-uat.techchefz.com/dashboard";
 
     return (
