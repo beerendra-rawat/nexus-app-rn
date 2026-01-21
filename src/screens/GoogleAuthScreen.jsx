@@ -82,12 +82,11 @@ export default function GoogleAuthScreen() {
       console.log("Auth Object to Save:", authObject);
 
       await saveAuthObject(authObject);     //Save object in AsyncStorage
-      await getAuthObject();        // Fetch object again & log
+      await getAuthObject();        // Fetch object
 
-      navigation.replace("AuthWebView");    // Navigate
+      navigation.replace("WebViewScreen");    // Navigate
 
     } catch (error) {
-      console.error("Sign-in error:", error);
       if (error.code === statusCodes.SIGN_IN_CANCELLED) {
         console.log('Sign in cancelled');
       } else if (error.code === statusCodes.IN_PROGRESS) {
@@ -221,4 +220,7 @@ const styles = StyleSheet.create({
   },
 
 })
+
+
+
 

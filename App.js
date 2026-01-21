@@ -1,9 +1,9 @@
-import { StyleSheet } from "react-native";
 import { useFonts } from "expo-font";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import GoogleAuthScreen from "./src/screens/GoogleAuthScreen";
-import AuthWebView from "./src/screens/WebView";
+import WebViewScreen from "./src/screens/WebViewScreen";
+
 
 const Stack = createNativeStackNavigator();
 
@@ -20,12 +20,8 @@ export default function App() {
     <NavigationContainer>
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         <Stack.Screen name="GoogleAuth" component={GoogleAuthScreen} />
-        <Stack.Screen name="AuthWebView" component={AuthWebView} />
+        <Stack.Screen name="WebViewScreen" component={WebViewScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1 },
-});

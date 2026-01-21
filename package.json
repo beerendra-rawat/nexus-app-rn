@@ -1,7 +1,7 @@
 {
   "name": "nexus-app-rn",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -27,10 +27,7 @@
     "react-native": "0.81.5",
     "react-native-safe-area-context": "~5.6.0",
     "react-native-screens": "~4.16.0",
-    "react-native-webview": "^13.16.0"
+    "react-native-webview": "13.15.0"
   },
-  "private": true,
-  "devDependencies": {
-    "expo-module-scripts": "^5.0.8"
-  }
+  "private": true
 }

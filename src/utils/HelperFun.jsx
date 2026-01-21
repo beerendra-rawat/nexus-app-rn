@@ -10,25 +10,25 @@ export const saveAuthToken = async (idToken) => {
     }
 }
 
-export const getAuthToken = async () => {
-    try {
-        const token = await AsyncStorage.getItem("Auth_Token");
-        console.log("Retrieved auth token:", token);
-        return token;
-    } catch (error) {
-        console.error("Error getting auth token:", error);
-        return null;
-    }
-}
+// export const getAuthToken = async () => {
+//     try {
+//         const token = await AsyncStorage.getItem("Auth_Token");
+//         console.log("Retrieved auth token:", token);
+//         return token;
+//     } catch (error) {
+//         console.error("Error getting auth token:", error);
+//         return null;
+//     }
+// }
 
-export const clearAuthToken = async () => {
-    try {
-        await AsyncStorage.removeItem("Auth_Token");
-        console.log("Auth token cleared");
-    } catch (error) {
-        console.error("Error clearing auth token:", error);
-    }
-};
+// export const clearAuthToken = async () => {
+//     try {
+//         await AsyncStorage.removeItem("Auth_Token");
+//         console.log("Auth token cleared");
+//     } catch (error) {
+//         console.error("Error clearing auth token:", error);
+//     }
+// };
 
 
 export const saveAuthObject = async (authObject) => {
